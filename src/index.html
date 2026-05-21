@@ -522,6 +522,14 @@
     <div class="season-error" id="season-error"></div>
     <label>JAHR</label>
     <input type="number" id="input-season-year" placeholder="z.B. 2026" min="2000" max="2100" />
+    <label style="margin-top: 8px;">PREIS GRAVITY CARD</label>
+    <div class="euro-wrap">
+      <input type="number" id="input-season-budget" placeholder="Optional" />
+      <span class="euro-symbol">€</span>
+    </div>
+    <div class="hint" style="margin-bottom: 16px;">
+      Kann später in den Einstellungen geändert werden.
+    </div>
     <div id="import-section">
       <div class="import-checkbox-row" onclick="document.getElementById('import-check').click()">
         <input type="checkbox" id="import-check" onclick="event.stopPropagation(); toggleImportSection()" />
@@ -763,6 +771,7 @@
 
     document.getElementById('season-edit-title').textContent = 'NEUE SAISON';
     document.getElementById('input-season-year').value = nextYear;
+    document.getElementById('input-season-budget').value = '';
     document.getElementById('season-error').textContent = '';
 
     // Populate import dropdown with existing seasons (newest first)
@@ -780,8 +789,12 @@
 
   function openEditSeason(year) {
     editingSeasonYear = year;
+    const season = seasons[year];
     document.getElementById('season-edit-title').textContent = 'SAISON BEARBEITEN';
     document.getElementById('input-season-year').value = year;
+    document.getElementById('input-season-budget').value =
+      (season && season.budget && season.budget.start !== null && season.budget.start !== undefined)
+        ? season.budget.start : '';
     document.getElementById('season-error').textContent = '';
     document.getElementById('import-section').style.display = 'none';
     document.getElementById('season-edit-modal').style.display = 'flex';
@@ -814,6 +827,9 @@
     }
     setSeasonError('');
 
+    const budgetVal = parseFloat(document.getElementById('input-season-budget').value);
+    const budgetStart = isNaN(budgetVal) || budgetVal <= 0 ? null : budgetVal;
+
     if (editingSeasonYear === null) {
       // Create new season
       if (seasons[newYear]) {
@@ -821,7 +837,7 @@
         return;
       }
 
-      const newSeason = { year: newYear, categories: [], budget: { start: null, spent: 0 } };
+      const newSeason = { year: newYear, categories: [], budget: { start: budgetStart, spent: 0 } };
 
       if (document.getElementById('import-check').checked) {
         const fromYear = parseInt(document.getElementById('import-from-season').value);
@@ -858,6 +874,10 @@
       } else {
         seasons[newYear].year = newYear;
       }
+
+      // Update budget
+      if (!seasons[newYear].budget) seasons[newYear].budget = { start: null, spent: 0 };
+      seasons[newYear].budget.start = budgetStart;
 
       closeSeasonEditModal();
       renderSeasonSelector();
@@ -976,6 +996,7 @@
   function saveSettings() {
     const val = parseFloat(document.getElementById('settings-budget-input').value);
     budgetStart = isNaN(val) || val <= 0 ? null : val;
+    syncToActiveSeason();
     save();
     renderStatistics();
     closeSettings();
