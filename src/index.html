@@ -26,13 +26,13 @@
     html { overflow-x: hidden; }
 
     body {
-      background: #0d0d0d;
+      background: #121212;
       background-image:
-        radial-gradient(circle at 20% 20%, #1a1200 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, #001020 0%, transparent 50%);
+        radial-gradient(circle at 20% 20%, #1f1600 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, #001428 0%, transparent 50%);
       min-height: 100vh;
       font-family: 'IBM Plex Mono', monospace;
-      color: #f0f0f0;
+      color: #ffffff;
       overflow-x: hidden;
       padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
     }
@@ -42,19 +42,19 @@
     /* Header */
     .header { max-width: 520px; margin: 0 auto 14px; }
     .header-row { display: flex; justify-content: space-between; align-items: center; }
-    .title { font-family: 'Bebas Neue', cursive; font-size: 26px; letter-spacing: 4px; line-height: 1; }
-    .subtitle { color: #444; font-size: 11px; letter-spacing: 4px; margin-top: 4px; }
-    .header-divider { height: 1px; background: linear-gradient(90deg, #333, transparent); margin-top: 10px; }
+    .title { font-family: 'Bebas Neue', cursive; font-size: 26px; letter-spacing: 4px; line-height: 1; color: #ffffff; }
+    .subtitle { color: #888; font-size: 11px; letter-spacing: 4px; margin-top: 4px; }
+    .header-divider { height: 1px; background: linear-gradient(90deg, #444, transparent); margin-top: 10px; }
 
     .btn-group { display: flex; gap: 8px; }
 
     .btn-reset {
-      background: transparent; border: 1px solid #2a2a2a; border-radius: 10px;
-      color: #555; padding: 8px 14px; cursor: pointer; font-size: 11px;
+      background: transparent; border: 1px solid #444; border-radius: 10px;
+      color: #aaa; padding: 8px 14px; cursor: pointer; font-size: 11px;
       letter-spacing: 2px; font-family: 'IBM Plex Mono', monospace;
       transition: all 0.2s;
     }
-    .btn-reset:hover { border-color: #444; color: #888; }
+    .btn-reset:hover { border-color: #666; color: #ddd; }
 
     .btn-new {
       background: #f0f0f0; border: none; border-radius: 10px;
@@ -69,31 +69,31 @@
       display: flex; align-items: center; gap: 8px; margin-top: 10px;
     }
     .btn-season-nav {
-      background: transparent; border: 1px solid #2a2a2a; border-radius: 8px;
-      color: #555; padding: 5px 10px; cursor: pointer; font-size: 12px;
+      background: transparent; border: 1px solid #444; border-radius: 8px;
+      color: #aaa; padding: 5px 10px; cursor: pointer; font-size: 12px;
       font-family: 'IBM Plex Mono', monospace; transition: all 0.2s; flex-shrink: 0;
     }
-    .btn-season-nav:hover:not(:disabled) { border-color: #444; color: #888; }
-    .btn-season-nav:disabled { opacity: 0.2; cursor: not-allowed; }
+    .btn-season-nav:hover:not(:disabled) { border-color: #666; color: #ddd; }
+    .btn-season-nav:disabled { opacity: 0.3; cursor: not-allowed; }
     .season-label-btn {
-      background: transparent; border: 1px solid #333; border-radius: 10px;
-      color: #f0f0f0; padding: 5px 14px; cursor: pointer;
+      background: transparent; border: 1px solid #555; border-radius: 10px;
+      color: #ffffff; padding: 5px 14px; cursor: pointer;
       font-family: 'Bebas Neue', cursive; font-size: 15px; letter-spacing: 3px;
       transition: all 0.2s; flex: 1; text-align: center;
     }
-    .season-label-btn:hover { border-color: #555; background: #1a1a1a; }
+    .season-label-btn:hover { border-color: #777; background: #1f1f1f; }
 
     /* Cards grid */
     .cards { max-width: 520px; margin: 0 auto; display: grid; gap: 8px; }
 
     .empty {
-      text-align: center; color: #333; font-family: 'Bebas Neue', cursive;
+      text-align: center; color: #666; font-family: 'Bebas Neue', cursive;
       font-size: 20px; letter-spacing: 4px; padding: 60px 0;
     }
 
     /* Card — horizontal single-row layout */
     .card {
-      background: #1a1a1a; border-radius: 14px; padding: 10px 12px;
+      background: #1e1e1e; border-radius: 14px; padding: 10px 12px;
       display: flex; align-items: center; gap: 10px;
       transition: box-shadow 0.3s;
     }
@@ -101,8 +101,8 @@
     .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
     .card-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-    .card-name { font-family: 'Bebas Neue', cursive; font-size: 17px; letter-spacing: 2px; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .counter-meta { color: #555; font-size: 10px; font-family: monospace; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-name { font-family: 'Bebas Neue', cursive; font-size: 17px; letter-spacing: 2px; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #ffffff; }
+    .counter-meta { color: #999; font-size: 10px; font-family: monospace; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .card-controls { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 
@@ -133,11 +133,11 @@
     }
 
     .btn-icon {
-      background: none; border: 1px solid #2a2a2a; border-radius: 7px;
-      color: #666; cursor: pointer; padding: 3px 6px; font-size: 11px;
+      background: none; border: 1px solid #444; border-radius: 7px;
+      color: #999; cursor: pointer; padding: 3px 6px; font-size: 11px;
       transition: all 0.2s;
     }
-    .btn-icon:hover { border-color: #555; color: #bbb; }
+    .btn-icon:hover { border-color: #666; color: #ddd; }
 
     .ticket-gc-badge {
       font-size: 9px; letter-spacing: 1px; font-family: 'IBM Plex Mono', monospace;
@@ -145,10 +145,10 @@
       font-weight: 500;
     }
     .ticket-gc-badge-yes {
-      background: #7bc03a22; color: #7bc03a; border: 1px solid #7bc03a44;
+      background: #7bc03a33; color: #9ed65e; border: 1px solid #7bc03a66;
     }
     .ticket-gc-badge-no {
-      background: #33333322; color: #555; border: 1px solid #33333344;
+      background: #44444433; color: #aaa; border: 1px solid #44444466;
     }
 
     /* Modal */
@@ -158,7 +158,7 @@
       z-index: 100; padding: 16px;
     }
     .modal {
-      background: #111; border: 1px solid #333; border-radius: 20px;
+      background: #1a1a1a; border: 1px solid #444; border-radius: 20px;
       padding: 28px 24px; width: 100%; max-width: 400px;
     }
     .modal-title {
@@ -166,26 +166,26 @@
       letter-spacing: 3px; margin-bottom: 20px;
     }
 
-    label { color: #888; font-size: 12px; letter-spacing: 1px; display: block; margin-bottom: 6px; }
+    label { color: #aaa; font-size: 12px; letter-spacing: 1px; display: block; margin-bottom: 6px; }
 
     input[type="text"], input[type="number"], input[type="password"] {
-      width: 100%; background: #1a1a1a; border: 1px solid #333;
-      border-radius: 10px; padding: 12px 14px; color: #f0f0f0;
+      width: 100%; background: #252525; border: 1px solid #444;
+      border-radius: 10px; padding: 12px 14px; color: #ffffff;
       font-size: 15px; font-family: monospace; outline: none;
       margin-bottom: 14px; transition: border-color 0.2s;
     }
-    input:focus { border-color: #555; }
+    input:focus { border-color: #666; }
 
     select {
-      width: 100%; background: #1a1a1a; border: 1px solid #333;
-      border-radius: 10px; padding: 12px 14px; color: #f0f0f0;
+      width: 100%; background: #252525; border: 1px solid #444;
+      border-radius: 10px; padding: 12px 14px; color: #ffffff;
       font-size: 15px; font-family: monospace; outline: none;
       margin-bottom: 14px; transition: border-color 0.2s;
       appearance: none; cursor: pointer;
     }
-    select:focus { border-color: #555; }
+    select:focus { border-color: #666; }
 
-    .hint { font-size: 12px; color: #555; font-family: monospace; margin-top: -10px; margin-bottom: 16px; }
+    .hint { font-size: 12px; color: #999; font-family: monospace; margin-top: -10px; margin-bottom: 16px; }
 
     .color-picker { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
     .color-dot {
@@ -208,21 +208,21 @@
     /* Statistics Panel */
     .statistics-panel {
       max-width: 520px; margin: 0 auto 12px;
-      background: linear-gradient(135deg, #1a1a1a 0%, #1f1f1f 100%);
-      border: 1px solid #2a2a2a;
+      background: linear-gradient(135deg, #1e1e1e 0%, #252525 100%);
+      border: 1px solid #444;
       border-radius: 16px; padding: 18px 20px;
     }
 
     .stats-header {
       font-family: 'Bebas Neue', cursive; font-size: 13px;
-      letter-spacing: 3px; color: #555; margin-bottom: 14px;
+      letter-spacing: 3px; color: #999; margin-bottom: 14px;
       text-align: center;
     }
 
     .stats-main {
       display: flex; justify-content: space-around; gap: 30px;
       margin-bottom: 16px; padding-bottom: 16px;
-      border-bottom: 1px solid #222;
+      border-bottom: 1px solid #333;
     }
 
     .stats-item {
@@ -230,13 +230,13 @@
     }
 
     .stats-label {
-      font-size: 11px; letter-spacing: 2px; color: #666;
+      font-size: 11px; letter-spacing: 2px; color: #aaa;
       font-family: 'IBM Plex Mono', monospace;
     }
 
     .stats-value {
       font-family: 'Bebas Neue', cursive; font-size: 34px;
-      letter-spacing: 2px; color: #f0f0f0;
+      letter-spacing: 2px; color: #ffffff;
     }
 
     .stats-breakdown {
@@ -248,13 +248,13 @@
     }
 
     .stats-sublabel {
-      font-size: 11px; font-family: monospace; color: #555;
+      font-size: 11px; font-family: monospace; color: #999;
       flex: 1;
     }
 
     .stats-subvalue {
       font-size: 12px; font-family: 'IBM Plex Mono', monospace;
-      color: #888; min-width: 40px; text-align: right;
+      color: #bbb; min-width: 40px; text-align: right;
     }
 
     .stats-subvalue:last-child {
@@ -263,7 +263,7 @@
 
     .stats-gc {
       margin-top: 16px; padding-top: 16px;
-      border-top: 1px solid #222;
+      border-top: 1px solid #333;
     }
 
     .stats-gc-row {
@@ -273,7 +273,7 @@
 
     .stats-gc-price {
       font-family: 'IBM Plex Mono', monospace; font-size: 13px;
-      letter-spacing: 1px; color: #888;
+      letter-spacing: 1px; color: #bbb;
     }
 
     .stats-gc-value {
