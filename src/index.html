@@ -255,7 +255,13 @@
     }
 
     .stats-gc-row {
-      margin-bottom: 6px;
+      margin-bottom: 6px; display: flex; justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .stats-gc-price {
+      font-family: 'IBM Plex Mono', monospace; font-size: 13px;
+      letter-spacing: 1px; color: #888;
     }
 
     .stats-gc-value {
@@ -471,6 +477,7 @@
       <div class="stats-divider"></div>
       <div class="stats-row stats-gc-row">
         <span class="stats-label">Gravity Card</span>
+        <span class="stats-gc-price" id="stats-gc-price">—</span>
       </div>
       <div class="stats-row">
         <span class="stats-sublabel">└─ Amortisiert</span>
@@ -983,6 +990,7 @@
     const gcSection = document.getElementById('stats-gc-section');
     if (budgetStart !== null && budgetStart !== undefined && budgetStart > 0) {
       gcSection.style.display = 'block';
+      document.getElementById('stats-gc-price').textContent = fmtEur(budgetStart);
       const amortization = budgetStart - gcSpent;
       const amortEl = document.getElementById('stats-gc-amortization');
       amortEl.textContent = (amortization > 0 ? '+' : '') + fmtEur(amortization);
