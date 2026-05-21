@@ -193,19 +193,78 @@
       transition: all 0.2s;
     }
 
-    /* Budget Panel */
-    .budget-panel {
+    /* Statistics Panel */
+    .statistics-panel {
       max-width: 520px; margin: 0 auto 12px;
-      background: #1a1a1a; border: 1px solid #2a2a2a;
-      border-radius: 14px; padding: 12px 14px;
+      background: linear-gradient(135deg, #1a1a1a 0%, #1f1f1f 100%);
+      border: 1px solid #2a2a2a;
+      border-radius: 16px; padding: 18px 20px;
+    }
+
+    .stats-header {
+      font-family: 'Bebas Neue', cursive; font-size: 13px;
+      letter-spacing: 3px; color: #555; margin-bottom: 14px;
+      text-align: center;
+    }
+
+    .stats-main {
+      display: flex; justify-content: space-around; gap: 30px;
+      margin-bottom: 16px; padding-bottom: 16px;
+      border-bottom: 1px solid #222;
+    }
+
+    .stats-item {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+    }
+
+    .stats-label {
+      font-size: 11px; letter-spacing: 2px; color: #666;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .stats-value {
+      font-family: 'Bebas Neue', cursive; font-size: 34px;
+      letter-spacing: 2px; color: #f0f0f0;
+    }
+
+    .stats-breakdown {
       display: flex; flex-direction: column; gap: 8px;
     }
-    .budget-label {
-      font-family: 'Bebas Neue', cursive; font-size: 12px;
-      letter-spacing: 3px; color: #555;
+
+    .stats-row {
+      display: flex; align-items: baseline; gap: 12px;
     }
-    .budget-row { display: flex; align-items: center; gap: 12px; }
-    .budget-input-wrap { position: relative; flex: 1; }
+
+    .stats-sublabel {
+      font-size: 11px; font-family: monospace; color: #555;
+      flex: 1;
+    }
+
+    .stats-subvalue {
+      font-size: 12px; font-family: 'IBM Plex Mono', monospace;
+      color: #888; min-width: 40px; text-align: right;
+    }
+
+    .stats-subvalue:last-child {
+      min-width: 90px;
+    }
+
+    .stats-gc {
+      margin-top: 16px; padding-top: 16px;
+      border-top: 1px solid #222;
+    }
+
+    .stats-gc-row {
+      margin-bottom: 6px;
+    }
+
+    .stats-gc-value {
+      font-family: 'Bebas Neue', cursive; font-size: 22px;
+      letter-spacing: 2px; color: #7bc03a;
+    }
+
+    .stats-gc-value.negative { color: #c03a3a; }
+
     .euro-wrap { position: relative; display: block; }
     .euro-wrap .euro-symbol {
       position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
@@ -213,28 +272,10 @@
       pointer-events: none;
     }
     .euro-wrap input { padding-right: 28px !important; }
-    #budget-input {
-      width: 100%; background: #111; border: 1px solid #2a2a2a;
-      border-radius: 10px; padding: 10px 14px; color: #f0f0f0;
-      font-size: 16px; font-family: 'IBM Plex Mono', monospace; outline: none;
-      margin-bottom: 0; transition: border-color 0.2s;
-    }
-    #budget-input:focus { border-color: #444; }
-    .btn-budget-reset {
-      background: transparent; border: 1px solid #2a2a2a; border-radius: 10px;
-      color: #555; padding: 10px 12px; cursor: pointer; font-size: 11px;
-      letter-spacing: 1px; font-family: 'IBM Plex Mono', monospace;
-      white-space: nowrap; transition: all 0.2s; flex-shrink: 0;
-    }
-    .btn-budget-reset:hover { border-color: #444; color: #888; }
-    .budget-remaining {
-      display: flex; justify-content: space-between; align-items: baseline;
-      padding-top: 6px; border-top: 1px solid #222;
-    }
-    .budget-remaining-label { font-size: 11px; color: #444; letter-spacing: 2px; }
-    .budget-remaining-value {
-      font-family: 'Bebas Neue', cursive; font-size: 24px; letter-spacing: 3px;
-      transition: color 0.3s;
+
+    @media (max-width: 360px) {
+      .stats-value { font-size: 28px; }
+      .stats-subvalue:last-child { min-width: 80px; }
     }
 
     /* Season Manager Modal */
@@ -374,13 +415,13 @@
   <div class="header">
     <div class="header-row">
       <div>
-        <div class="title">GRAVITY CARD</div>
-        <div class="title" style="color:#555">PAYBACK COUNTER</div>
+        <div class="title">BIKEPARK TRACKER</div>
       </div>
       <div class="btn-group">
         <button class="btn-reset" onclick="doLogout()">LOGOUT</button>
+        <button class="btn-reset" onclick="openSettings()">SETTINGS</button>
         <button class="btn-reset" onclick="resetAll()">RESET ALL</button>
-        <button class="btn-new" onclick="openAdd()">+ NEU</button>
+        <button class="btn-new" onclick="openAdd()">+ NEUER BESUCH</button>
       </div>
     </div>
     <!-- Season row -->
@@ -392,21 +433,43 @@
     <div class="header-divider"></div>
   </div>
 
-  <!-- Budget Panel -->
-  <div class="budget-panel" id="budget-panel">
-    <div class="budget-label">PREIS GRAVITY CARD</div>
-    <div class="budget-row">
-      <div class="budget-input-wrap">
-        <div class="euro-wrap">
-          <input type="number" id="budget-input" placeholder="0" oninput="onBudgetInput()" />
-          <span class="euro-symbol">€</span>
-        </div>
+  <!-- Statistics Panel -->
+  <div class="statistics-panel" id="statistics-panel">
+    <div class="stats-header">SAISON <span id="stats-season">—</span> AUSGABEN</div>
+
+    <div class="stats-main">
+      <div class="stats-item">
+        <span class="stats-label">GESAMT</span>
+        <span class="stats-value" id="stats-total">—</span>
       </div>
-      <button class="btn-budget-reset" onclick="resetBudget()">ZURÜCKSETZEN</button>
+      <div class="stats-item">
+        <span class="stats-label">BESUCHE</span>
+        <span class="stats-value" id="stats-visits">—</span>
+      </div>
     </div>
-    <div class="budget-remaining">
-      <span class="budget-remaining-label">VERBLEIBEND</span>
-      <span class="budget-remaining-value" id="budget-remaining">—</span>
+
+    <div class="stats-breakdown">
+      <div class="stats-row">
+        <span class="stats-sublabel">├─ Mit Gravity Card</span>
+        <span class="stats-subvalue" id="stats-gc-visits">—</span>
+        <span class="stats-subvalue" id="stats-gc-spent">—</span>
+      </div>
+      <div class="stats-row">
+        <span class="stats-sublabel">└─ Ohne Gravity Card</span>
+        <span class="stats-subvalue" id="stats-non-gc-visits">—</span>
+        <span class="stats-subvalue" id="stats-non-gc-spent">—</span>
+      </div>
+    </div>
+
+    <div class="stats-gc" id="stats-gc-section" style="display:none">
+      <div class="stats-divider"></div>
+      <div class="stats-row stats-gc-row">
+        <span class="stats-label">Gravity Card</span>
+      </div>
+      <div class="stats-row">
+        <span class="stats-sublabel">└─ Amortisiert</span>
+        <span class="stats-gc-value" id="stats-gc-amortization">—</span>
+      </div>
     </div>
   </div>
 
@@ -426,6 +489,11 @@
       <span class="euro-symbol">€</span>
     </div>
     <div class="hint">Jeder Klick auf + verringert den Ausgangswert (Preis Gravity Card) um diesen Wert.</div>
+    <label style="margin-top: 8px;">TICKET-TYP</label>
+    <div class="import-checkbox-row" onclick="document.getElementById('input-park-ticket').click()" style="margin-bottom: 8px;">
+      <input type="checkbox" id="input-park-ticket" onclick="event.stopPropagation();" />
+      <span class="import-checkbox-label">Ticketpreis wird von Gravitycard abgerechnet</span>
+    </div>
     <label>FARBE</label>
     <div class="color-picker" id="color-picker"></div>
     <div class="modal-footer">
@@ -472,9 +540,29 @@
   </div>
 </div>
 
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settings-modal" style="display:none" onclick="handleSettingsOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-title">EINSTELLUNGEN</div>
+    <label>PREIS GRAVITY CARD</label>
+    <div class="euro-wrap">
+      <input type="number" id="settings-budget-input" placeholder="Optional" />
+      <span class="euro-symbol">€</span>
+    </div>
+    <div class="hint">
+      Wenn gesetzt, wird der Amortisationsstatus im Dashboard angezeigt.
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeSettings()">SCHLIESSEN</button>
+      <button class="btn-save" id="btn-save-settings" onclick="saveSettings()"
+        style="background:#f0f0f022; border:1px solid #f0f0f0; color:#f0f0f0;">SPEICHERN</button>
+    </div>
+  </div>
+</div>
+
 <!-- Install Banner -->
 <div id="install-banner">
-  <span>Gravity Card Payback Counter zum Startbildschirm hinzufügen?</span>
+  <span>Bikepark Tracker zum Startbildschirm hinzufügen?</span>
   <button id="btn-install" onclick="installPWA()">INSTALLIEREN</button>
   <button id="btn-dismiss" onclick="dismissInstall()">✕</button>
 </div>
@@ -505,7 +593,9 @@
     if (!s) return;
     categories = s.categories || [];
     budgetStart = s.budget ? s.budget.start : null;
-    budgetSpent = s.budget ? (s.budget.spent || 0) : 0;
+    budgetSpent = categories
+      .filter(c => c.reducesTheCurrentTotalOfTheGravityCardPrice ?? true)
+      .reduce((sum, c) => sum + c.sum, 0);
     const inp = document.getElementById('budget-input');
     if (inp) inp.value = (budgetStart !== null && budgetStart !== undefined) ? budgetStart : '';
   }
@@ -591,7 +681,7 @@
       if (document.visibilityState === 'hidden') return;
       await load();
       render();
-      renderBudget();
+      renderStatistics();
       renderSeasonSelector();
     }, 10_000);
   }
@@ -616,7 +706,7 @@
     activeSeason = year;
     syncFromActiveSeason();
     render();
-    renderBudget();
+    renderStatistics();
     renderSeasonSelector();
     save();
   }
@@ -742,6 +832,7 @@
             id: Date.now() + i,
             count: 0,
             sum: 0,
+            reducesTheCurrentTotalOfTheGravityCardPrice: c.reducesTheCurrentTotalOfTheGravityCardPrice ?? true
           }));
         }
       }
@@ -830,51 +921,86 @@
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  function renderBudget() {
-    const el = document.getElementById('budget-remaining');
-    if (budgetStart === null || budgetStart === '') {
-      el.textContent = '—';
-      el.style.color = '#555';
-      return;
+  function renderStatistics() {
+    // Gesamtausgaben
+    const totalSpent = categories.reduce((sum, c) => sum + c.sum, 0);
+    document.getElementById('stats-total').textContent = fmtEur(totalSpent);
+
+    // Anzahl Besuche
+    const totalVisits = categories.reduce((sum, c) => sum + c.count, 0);
+    document.getElementById('stats-visits').textContent = totalVisits;
+
+    // Mit/Ohne GC
+    const gcCategories = categories.filter(c => c.reducesTheCurrentTotalOfTheGravityCardPrice ?? true);
+    const gcVisits = gcCategories.reduce((sum, c) => sum + c.count, 0);
+    const gcSpent = gcCategories.reduce((sum, c) => sum + c.sum, 0);
+    const nonGcVisits = totalVisits - gcVisits;
+    const nonGcSpent = totalSpent - gcSpent;
+
+    document.getElementById('stats-gc-visits').textContent = gcVisits;
+    document.getElementById('stats-gc-spent').textContent = fmtEur(gcSpent);
+    document.getElementById('stats-non-gc-visits').textContent = nonGcVisits;
+    document.getElementById('stats-non-gc-spent').textContent = fmtEur(nonGcSpent);
+
+    // Saison-Jahr
+    document.getElementById('stats-season').textContent = activeSeason || '—';
+
+    // GC Amortisation (nur wenn Budget gesetzt)
+    const gcSection = document.getElementById('stats-gc-section');
+    if (budgetStart !== null && budgetStart !== undefined && budgetStart > 0) {
+      gcSection.style.display = 'block';
+      const amortization = budgetStart - gcSpent;
+      const amortEl = document.getElementById('stats-gc-amortization');
+      amortEl.textContent = (amortization > 0 ? '+' : '') + fmtEur(amortization);
+      amortEl.className = 'stats-gc-value ' + (amortization <= 0 ? '' : 'negative');
+    } else {
+      gcSection.style.display = 'none';
     }
-    const remaining = budgetStart - budgetSpent;
-    el.textContent = (remaining > 0 ? '+' : '') + fmtEur(remaining);
-    if (remaining > 0) el.style.color = '#c03a3a';
-    else el.style.color = '#7bc03a';
   }
 
-  function onBudgetInput() {
-    const val = parseFloat(document.getElementById('budget-input').value);
-    budgetStart = isNaN(val) ? null : val;
-    budgetSpent = categories.reduce((sum, c) => sum + c.sum, 0);
-    save();
-    renderBudget();
+  function openSettings() {
+    document.getElementById('settings-budget-input').value =
+      (budgetStart !== null && budgetStart !== undefined) ? budgetStart : '';
+    document.getElementById('settings-modal').style.display = 'flex';
+    setTimeout(() => document.getElementById('settings-budget-input').focus(), 50);
   }
 
-  function resetBudget() {
-    budgetSpent = 0;
-    budgetStart = null;
-    document.getElementById('budget-input').value = '';
+  function closeSettings() {
+    document.getElementById('settings-modal').style.display = 'none';
+  }
+
+  function handleSettingsOverlayClick(e) {
+    if (e.target === document.getElementById('settings-modal')) closeSettings();
+  }
+
+  function saveSettings() {
+    const val = parseFloat(document.getElementById('settings-budget-input').value);
+    budgetStart = isNaN(val) || val <= 0 ? null : val;
     save();
-    renderBudget();
+    renderStatistics();
+    closeSettings();
   }
 
   // Counter actions
   function increment(id) {
     const cat = categories.find(c => c.id === id);
-    if (cat) budgetSpent += cat.step;
+    if (cat && (cat.reducesTheCurrentTotalOfTheGravityCardPrice ?? true)) {
+      budgetSpent += cat.step;
+    }
     categories = categories.map(c => c.id === id ? {...c, count: c.count+1, sum: c.sum+c.step} : c);
-    save(); render(); renderBudget();
+    save(); render(); renderStatistics();
   }
   function decrement(id) {
     categories = categories.map(c => {
       if (c.id !== id) return c;
       const newCount = Math.max(0, c.count - 1);
       const newSum = c.count > 0 ? c.sum - c.step : c.sum;
-      if (c.count > 0) budgetSpent -= c.step;
+      if (c.count > 0 && (c.reducesTheCurrentTotalOfTheGravityCardPrice ?? true)) {
+        budgetSpent -= c.step;
+      }
       return {...c, count: newCount, sum: newSum};
     });
-    save(); render(); renderBudget();
+    save(); render(); renderStatistics();
   }
   function deleteCategory(id) {
     categories = categories.filter(c => c.id !== id);
@@ -883,7 +1009,7 @@
   function resetAll() {
     budgetSpent = 0;
     categories = categories.map(c => ({...c, count: 0, sum: 0}));
-    save(); render(); renderBudget();
+    save(); render(); renderStatistics();
   }
 
   // ── Ticket Modal ──────────────────────────────────────────────────────────────
@@ -916,6 +1042,7 @@
     document.getElementById('modal-title').textContent = 'NEUES TICKET';
     document.getElementById('input-name').value = '';
     document.getElementById('input-step').value = '1';
+    document.getElementById('input-park-ticket').checked = true;
     buildColorPicker();
     selectColor(COLORS[0]);
     document.getElementById('modal').style.display = 'flex';
@@ -930,6 +1057,7 @@
     document.getElementById('modal-title').textContent = 'BEARBEITEN';
     document.getElementById('input-name').value = cat.name;
     document.getElementById('input-step').value = cat.step;
+    document.getElementById('input-park-ticket').checked = cat.reducesTheCurrentTotalOfTheGravityCardPrice ?? true;
     buildColorPicker();
     selectColor(cat.color);
     document.getElementById('modal').style.display = 'flex';
@@ -948,12 +1076,13 @@
   function saveCategory() {
     const name = document.getElementById('input-name').value.trim();
     const step = parseFloat(document.getElementById('input-step').value) || 1;
+    const reducesTheCurrentTotalOfTheGravityCardPrice = document.getElementById('input-park-ticket').checked;
     if (!name) return;
 
     if (editingId !== null) {
-      categories = categories.map(c => c.id === editingId ? {...c, name, step, color: selectedColor} : c);
+      categories = categories.map(c => c.id === editingId ? {...c, name, step, color: selectedColor, reducesTheCurrentTotalOfTheGravityCardPrice} : c);
     } else {
-      categories.push({ id: Date.now(), name, color: selectedColor, step, count: 0, sum: 0 });
+      categories.push({ id: Date.now(), name, color: selectedColor, step, count: 0, sum: 0, reducesTheCurrentTotalOfTheGravityCardPrice });
     }
     save(); render(); closeModal();
   }
@@ -1021,7 +1150,7 @@
     showApp();
     await load();
     render();
-    renderBudget();
+    renderStatistics();
     renderSeasonSelector();
     startSync();
   }
@@ -1042,12 +1171,14 @@
       return;
     }
     if (e.key === 'Escape') {
+      if (document.getElementById('settings-modal').style.display !== 'none') { closeSettings(); return; }
       if (document.getElementById('season-edit-modal').style.display !== 'none') { closeSeasonEditModal(); return; }
       if (document.getElementById('season-modal').style.display !== 'none') { closeSeasonModal(); return; }
       closeModal();
       return;
     }
     if (e.key === 'Enter') {
+      if (document.getElementById('settings-modal').style.display !== 'none') { saveSettings(); return; }
       if (document.getElementById('season-edit-modal').style.display !== 'none') { saveSeason(); return; }
       if (document.getElementById('modal').style.display !== 'none') { saveCategory(); return; }
     }
