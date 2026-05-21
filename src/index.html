@@ -426,6 +426,11 @@
       <span class="euro-symbol">€</span>
     </div>
     <div class="hint">Jeder Klick auf + verringert den Ausgangswert (Preis Gravity Card) um diesen Wert.</div>
+    <label style="margin-top: 8px;">TICKET-TYP</label>
+    <div class="import-checkbox-row" onclick="document.getElementById('input-park-ticket').click()" style="margin-bottom: 8px;">
+      <input type="checkbox" id="input-park-ticket" onclick="event.stopPropagation();" />
+      <span class="import-checkbox-label">Ticketpreis wird von Gravitycard abgerechnet</span>
+    </div>
     <label>FARBE</label>
     <div class="color-picker" id="color-picker"></div>
     <div class="modal-footer">
@@ -505,7 +510,9 @@
     if (!s) return;
     categories = s.categories || [];
     budgetStart = s.budget ? s.budget.start : null;
-    budgetSpent = s.budget ? (s.budget.spent || 0) : 0;
+    budgetSpent = categories
+      .filter(c => c.reducesTheCurrentTotalOfTheGravityCardPrice ?? true)
+      .reduce((sum, c) => sum + c.sum, 0);
     const inp = document.getElementById('budget-input');
     if (inp) inp.value = (budgetStart !== null && budgetStart !== undefined) ? budgetStart : '';
   }
@@ -742,6 +749,7 @@
             id: Date.now() + i,
             count: 0,
             sum: 0,
+            reducesTheCurrentTotalOfTheGravityCardPrice: c.reducesTheCurrentTotalOfTheGravityCardPrice ?? true
           }));
         }
       }
@@ -846,7 +854,9 @@
   function onBudgetInput() {
     const val = parseFloat(document.getElementById('budget-input').value);
     budgetStart = isNaN(val) ? null : val;
-    budgetSpent = categories.reduce((sum, c) => sum + c.sum, 0);
+    budgetSpent = categories
+      .filter(c => c.reducesTheCurrentTotalOfTheGravityCardPrice ?? true)
+      .reduce((sum, c) => sum + c.sum, 0);
     save();
     renderBudget();
   }
@@ -862,7 +872,9 @@
   // Counter actions
   function increment(id) {
     const cat = categories.find(c => c.id === id);
-    if (cat) budgetSpent += cat.step;
+    if (cat && (cat.reducesTheCurrentTotalOfTheGravityCardPrice ?? true)) {
+      budgetSpent += cat.step;
+    }
     categories = categories.map(c => c.id === id ? {...c, count: c.count+1, sum: c.sum+c.step} : c);
     save(); render(); renderBudget();
   }
@@ -871,7 +883,9 @@
       if (c.id !== id) return c;
       const newCount = Math.max(0, c.count - 1);
       const newSum = c.count > 0 ? c.sum - c.step : c.sum;
-      if (c.count > 0) budgetSpent -= c.step;
+      if (c.count > 0 && (c.reducesTheCurrentTotalOfTheGravityCardPrice ?? true)) {
+        budgetSpent -= c.step;
+      }
       return {...c, count: newCount, sum: newSum};
     });
     save(); render(); renderBudget();
@@ -916,6 +930,7 @@
     document.getElementById('modal-title').textContent = 'NEUES TICKET';
     document.getElementById('input-name').value = '';
     document.getElementById('input-step').value = '1';
+    document.getElementById('input-park-ticket').checked = true;
     buildColorPicker();
     selectColor(COLORS[0]);
     document.getElementById('modal').style.display = 'flex';
@@ -930,6 +945,7 @@
     document.getElementById('modal-title').textContent = 'BEARBEITEN';
     document.getElementById('input-name').value = cat.name;
     document.getElementById('input-step').value = cat.step;
+    document.getElementById('input-park-ticket').checked = cat.reducesTheCurrentTotalOfTheGravityCardPrice ?? true;
     buildColorPicker();
     selectColor(cat.color);
     document.getElementById('modal').style.display = 'flex';
@@ -948,12 +964,13 @@
   function saveCategory() {
     const name = document.getElementById('input-name').value.trim();
     const step = parseFloat(document.getElementById('input-step').value) || 1;
+    const reducesTheCurrentTotalOfTheGravityCardPrice = document.getElementById('input-park-ticket').checked;
     if (!name) return;
 
     if (editingId !== null) {
-      categories = categories.map(c => c.id === editingId ? {...c, name, step, color: selectedColor} : c);
+      categories = categories.map(c => c.id === editingId ? {...c, name, step, color: selectedColor, reducesTheCurrentTotalOfTheGravityCardPrice} : c);
     } else {
-      categories.push({ id: Date.now(), name, color: selectedColor, step, count: 0, sum: 0 });
+      categories.push({ id: Date.now(), name, color: selectedColor, step, count: 0, sum: 0, reducesTheCurrentTotalOfTheGravityCardPrice });
     }
     save(); render(); closeModal();
   }
