@@ -1,7 +1,7 @@
 {
-  "name": "Gravity Card Payback Counter",
-  "short_name": "Gravity Card",
-  "description": "Kategorien-Counter mit Summen",
+  "name": "Bikepark Tracker",
+  "short_name": "Bikepark Tracker",
+  "description": "Track bikepark tickets and Gravity Card spending per season",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0d0d0d",
