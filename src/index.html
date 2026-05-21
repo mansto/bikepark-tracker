@@ -1133,6 +1133,9 @@
     save(); render();
   }
   function resetAll() {
+    if (!confirm('Möchten Sie wirklich alle Zähler für die aktuelle Saison zurücksetzen? Diese Aktion kann nicht rückgängig gemacht werden.')) {
+      return;
+    }
     budgetSpent = 0;
     categories = categories.map(c => ({...c, count: 0, sum: 0}));
     save(); render(); renderStatistics();
