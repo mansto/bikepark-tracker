@@ -41,26 +41,26 @@
 
     /* Header */
     .header { max-width: 520px; margin: 0 auto 14px; }
-    .header-row { display: flex; justify-content: space-between; align-items: center; }
+    .header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
     .title { font-family: 'Bebas Neue', cursive; font-size: 26px; letter-spacing: 4px; line-height: 1; color: #ffffff; }
     .subtitle { color: #888; font-size: 11px; letter-spacing: 4px; margin-top: 4px; }
     .header-divider { height: 1px; background: linear-gradient(90deg, #444, transparent); margin-top: 10px; }
 
-    .btn-group { display: flex; gap: 8px; }
+    .btn-group { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 
     .btn-reset {
       background: transparent; border: 1px solid #444; border-radius: 10px;
-      color: #aaa; padding: 8px 14px; cursor: pointer; font-size: 11px;
-      letter-spacing: 2px; font-family: 'IBM Plex Mono', monospace;
-      transition: all 0.2s;
+      color: #aaa; padding: 8px 12px; cursor: pointer; font-size: 11px;
+      letter-spacing: 1px; font-family: 'IBM Plex Mono', monospace;
+      transition: all 0.2s; white-space: nowrap;
     }
     .btn-reset:hover { border-color: #666; color: #ddd; }
 
     .btn-new {
       background: #f0f0f0; border: none; border-radius: 10px;
-      color: #0d0d0d; padding: 8px 16px; cursor: pointer; font-size: 13px;
-      font-family: 'Bebas Neue', cursive; letter-spacing: 3px;
-      transition: all 0.2s;
+      color: #0d0d0d; padding: 8px 14px; cursor: pointer; font-size: 13px;
+      font-family: 'Bebas Neue', cursive; letter-spacing: 2px;
+      transition: all 0.2s; white-space: nowrap;
     }
     .btn-new:hover { background: #fff; }
 
@@ -124,12 +124,68 @@
 
     .card-actions { display: flex; gap: 5px; flex-shrink: 0; }
 
+    /* Mobile optimizations */
+    @media (max-width: 480px) {
+      .title { font-size: 20px; letter-spacing: 2px; }
+      .btn-group { gap: 4px; }
+      .btn-reset {
+        padding: 6px 8px;
+        font-size: 9px;
+        letter-spacing: 0.5px;
+      }
+      .btn-new {
+        padding: 6px 10px;
+        font-size: 11px;
+        letter-spacing: 1px;
+      }
+      .season-row { gap: 6px; }
+      .btn-season-nav { padding: 4px 8px; font-size: 11px; }
+      .season-label-btn { padding: 4px 10px; font-size: 13px; letter-spacing: 2px; }
+      .statistics-panel { padding: 14px 16px; }
+      .stats-header { font-size: 11px; letter-spacing: 2px; }
+      .stats-label { font-size: 10px; }
+      .stats-value { font-size: 24px; }
+      .stats-sublabel { font-size: 9px; }
+      .stats-subvalue { font-size: 11px; }
+      .card-name { font-size: 15px; letter-spacing: 1px; }
+      .counter-meta { font-size: 9px; }
+      .ticket-gc-badge { font-size: 8px; padding: 2px 5px; }
+    }
+
     @media (max-width: 360px) {
       .app { padding: 12px 10px 80px; }
-      .card { gap: 7px; padding: 10px 10px; }
-      .btn-dec, .btn-inc { padding: 6px 8px; font-size: 18px; }
-      .counter-number { font-size: 26px; min-width: 30px; }
-      .card-controls { gap: 4px; }
+      .title { font-size: 18px; letter-spacing: 1px; }
+      .header-row { gap: 8px; }
+      .btn-group { gap: 3px; }
+      .btn-reset {
+        padding: 5px 6px;
+        font-size: 8px;
+        letter-spacing: 0;
+        border-radius: 8px;
+      }
+      .btn-new {
+        padding: 5px 8px;
+        font-size: 10px;
+        letter-spacing: 0.5px;
+        border-radius: 8px;
+      }
+      .season-row { gap: 4px; margin-top: 8px; }
+      .btn-season-nav { padding: 3px 6px; font-size: 10px; }
+      .season-label-btn { padding: 3px 8px; font-size: 12px; letter-spacing: 1px; }
+      .card { gap: 6px; padding: 9px 10px; }
+      .card-name { font-size: 14px; letter-spacing: 0.5px; }
+      .counter-meta { font-size: 8px; }
+      .btn-dec, .btn-inc { padding: 5px 8px; font-size: 18px; }
+      .counter-number { font-size: 24px; min-width: 28px; letter-spacing: 1px; }
+      .card-controls { gap: 3px; }
+      .ticket-gc-badge { font-size: 7px; padding: 2px 4px; letter-spacing: 0.5px; }
+      .btn-icon { padding: 2px 5px; font-size: 10px; }
+      .statistics-panel { padding: 12px 14px; }
+      .stats-main { gap: 20px; }
+      .stats-value { font-size: 22px; }
+      .stats-sublabel { font-size: 8px; }
+      .stats-subvalue { font-size: 10px; min-width: 35px; }
+      .stats-subvalue:last-child { min-width: 80px; }
     }
 
     .btn-icon {
@@ -291,11 +347,6 @@
     }
     .euro-wrap input { padding-right: 28px !important; }
 
-    @media (max-width: 360px) {
-      .stats-value { font-size: 28px; }
-      .stats-subvalue:last-child { min-width: 80px; }
-    }
-
     /* Season Manager Modal */
     .season-modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.75);
@@ -410,6 +461,65 @@
       font-size: 14px; letter-spacing: 2px; white-space: nowrap;
     }
     #btn-dismiss { background: none; border: none; color: #555; cursor: pointer; font-size: 18px; }
+
+    /* Additional mobile optimizations for modals and forms */
+    @media (max-width: 480px) {
+      .modal { padding: 24px 20px; }
+      .modal-title { font-size: 20px; letter-spacing: 2px; margin-bottom: 16px; }
+      label { font-size: 11px; }
+      input[type="text"], input[type="number"], input[type="password"], select {
+        padding: 10px 12px;
+        font-size: 14px;
+        margin-bottom: 12px;
+      }
+      .hint { font-size: 11px; margin-bottom: 14px; }
+      .btn-cancel, .btn-save { font-size: 14px; padding: 10px 0; }
+      .season-item { padding: 8px 12px; gap: 8px; }
+      .season-item-year { font-size: 18px; letter-spacing: 2px; }
+      .season-item-budget { font-size: 10px; }
+      .season-badge { font-size: 9px; padding: 2px 5px; }
+      .btn-season-switch { padding: 3px 8px; font-size: 9px; letter-spacing: 1px; }
+      .pin-logo { font-size: 30px; letter-spacing: 4px; }
+      .pin-logo-sub { font-size: 30px; letter-spacing: 4px; margin-bottom: 24px; }
+      .auth-btn-primary { font-size: 16px; padding: 12px 0; }
+      #install-banner { padding: 12px 14px; }
+      #install-banner span { font-size: 12px; }
+      #btn-install { padding: 6px 12px; font-size: 13px; }
+    }
+
+    @media (max-width: 360px) {
+      .modal { padding: 20px 16px; }
+      .modal-title { font-size: 18px; letter-spacing: 1px; margin-bottom: 14px; }
+      label { font-size: 10px; }
+      input[type="text"], input[type="number"], input[type="password"], select {
+        padding: 9px 10px;
+        font-size: 13px;
+        margin-bottom: 10px;
+      }
+      .euro-wrap .euro-symbol { font-size: 13px; right: 10px; }
+      .hint { font-size: 10px; margin-bottom: 12px; }
+      .btn-cancel, .btn-save { font-size: 13px; padding: 9px 0; }
+      .color-picker { gap: 6px; }
+      .color-dot { width: 24px; height: 24px; }
+      .season-list { gap: 6px; max-height: 240px; }
+      .season-item { padding: 7px 10px; gap: 6px; }
+      .season-item-year { font-size: 16px; letter-spacing: 1px; }
+      .season-item-budget { font-size: 9px; }
+      .season-badge { font-size: 8px; padding: 1px 4px; letter-spacing: 1px; }
+      .btn-season-switch { padding: 2px 6px; font-size: 8px; letter-spacing: 0.5px; }
+      .import-checkbox-label { font-size: 11px; }
+      .season-error { font-size: 11px; }
+      .pin-logo { font-size: 26px; letter-spacing: 3px; }
+      .pin-logo-sub { font-size: 26px; letter-spacing: 3px; margin-bottom: 20px; }
+      .auth-form { max-width: 280px; }
+      .auth-btn-primary { font-size: 15px; padding: 11px 0; letter-spacing: 2px; }
+      .auth-error, .auth-success { font-size: 11px; }
+      .auth-link { font-size: 10px; }
+      #install-banner { bottom: 12px; left: 12px; right: 12px; padding: 10px 12px; gap: 8px; }
+      #install-banner span { font-size: 11px; }
+      #btn-install { padding: 5px 10px; font-size: 12px; letter-spacing: 1px; }
+      #btn-dismiss { font-size: 16px; }
+    }
   </style>
 </head>
 <body>
