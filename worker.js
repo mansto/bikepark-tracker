@@ -60,49 +60,6 @@ async function requireAuth(request, env) {
 }
 
 // ── Handlers ──────────────────────────────────────────────────────────────────
-async function handleRegister(request, env) {
-  const body = await request.json().catch(() => null);
-  if (!body) return errRes('INVALID_BODY');
-
-  const username = (body.username || '').trim().toLowerCase();
-  const password = body.password || '';
-
-  if (!/^[a-z0-9_-]{3,32}$/.test(username))
-    return errRes('USERNAME_INVALID');
-  if (password.length < 8)
-    return errRes('PASSWORD_TOO_SHORT');
-
-  const existing = await env.GRAVITY_KV.get(`users:${username}`);
-  if (existing) return errRes('USERNAME_TAKEN', 409);
-
-  const userId = generateToken('usr');
-  const passwordHash = await hashPassword(password);
-
-  await env.GRAVITY_KV.put(`users:${username}`, JSON.stringify({
-    id: userId, username, passwordHash, createdAt: Date.now(),
-  }));
-
-  // Migrate legacy single-user data to first registering user
-  const legacy = await env.GRAVITY_KV.get('appdata', 'json');
-  if (legacy) {
-    await env.GRAVITY_KV.put(`user-data:${userId}`, JSON.stringify(legacy));
-    await env.GRAVITY_KV.delete('appdata');
-  } else {
-    await env.GRAVITY_KV.put(`user-data:${userId}`, JSON.stringify({
-      categories: [], budget: { start: null, spent: 0 },
-    }));
-  }
-
-  const token = generateToken('sess');
-  await env.GRAVITY_KV.put(
-    `sessions:${token}`,
-    JSON.stringify({ userId, username, createdAt: Date.now() }),
-    { expirationTtl: 60 * 60 * 24 * 7 }
-  );
-
-  return jsonRes({ token, username, userId }, 201);
-}
-
 async function handleLogin(request, env) {
   const body = await request.json().catch(() => null);
   if (!body) return errRes('INVALID_BODY');
@@ -135,49 +92,6 @@ async function handleLogout(request, env) {
   return jsonRes({ ok: true });
 }
 
-async function handleResetRequest(request, env) {
-  const body = await request.json().catch(() => null);
-  const username = (body?.username || '').trim().toLowerCase();
-
-  if (!username) return errRes('USERNAME_REQUIRED');
-
-  const userRaw = await env.GRAVITY_KV.get(`users:${username}`);
-  if (!userRaw) return errRes('USER_NOT_FOUND', 404);
-
-  const user = JSON.parse(userRaw);
-  const token = generateToken('reset');
-  await env.GRAVITY_KV.put(
-    `reset:${token}`,
-    JSON.stringify({ userId: user.id, username }),
-    { expirationTtl: 60 * 60 }
-  );
-
-  return jsonRes({ token });
-}
-
-async function handleResetConfirm(request, env) {
-  const body = await request.json().catch(() => null);
-  if (!body) return errRes('INVALID_BODY');
-
-  const { token, password } = body;
-  if (!token || !password) return errRes('MISSING_FIELDS');
-  if (password.length < 8) return errRes('PASSWORD_TOO_SHORT');
-
-  const resetRaw = await env.GRAVITY_KV.get(`reset:${token}`);
-  if (!resetRaw) return errRes('TOKEN_INVALID_OR_EXPIRED', 400);
-
-  const reset = JSON.parse(resetRaw);
-  const userRaw = await env.GRAVITY_KV.get(`users:${reset.username}`);
-  if (!userRaw) return errRes('USER_NOT_FOUND', 404);
-
-  const user = JSON.parse(userRaw);
-  user.passwordHash = await hashPassword(password);
-  await env.GRAVITY_KV.put(`users:${reset.username}`, JSON.stringify(user));
-  await env.GRAVITY_KV.delete(`reset:${token}`);
-
-  return jsonRes({ ok: true });
-}
-
 async function handleGetData(request, env) {
   const session = await requireAuth(request, env);
   if (!session) return errRes('UNAUTHORIZED', 401);
@@ -207,11 +121,8 @@ export default {
     const { pathname } = url;
     const method = request.method;
 
-    if (pathname === '/register'     && method === 'POST') return handleRegister(request, env);
     if (pathname === '/login'        && method === 'POST') return handleLogin(request, env);
     if (pathname === '/logout'       && method === 'POST') return handleLogout(request, env);
-    if (pathname === '/reset-request'&& method === 'POST') return handleResetRequest(request, env);
-    if (pathname === '/reset-confirm'&& method === 'POST') return handleResetConfirm(request, env);
     if (pathname === '/'             && method === 'GET')  return handleGetData(request, env);
     if (pathname === '/'             && method === 'PUT')  return handlePutData(request, env);
 

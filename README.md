@@ -172,11 +172,8 @@ Note the Worker URL printed at the end — you'll need it as the `API_URL` secre
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| `POST` | `/register` | — | Create a user account |
 | `POST` | `/login` | — | Authenticate, receive session token |
 | `POST` | `/logout` | session | Invalidate session |
-| `POST` | `/reset-request` | — | Generate a password reset token |
-| `POST` | `/reset-confirm` | — | Set a new password using a reset token |
 | `GET` | `/` | session | Load the authenticated user's data |
 | `PUT` | `/` | session | Save the authenticated user's data |
 
@@ -186,7 +183,6 @@ Note the Worker URL printed at the end — you'll need it as the `API_URL` secre
 users:{username}       → account (passwordHash, userId, createdAt)
 user-data:{userId}     → app data ({ seasons: { [year]: { year, categories, budget } }, activeSeason })
 sessions:{token}       → session record (7-day TTL)
-reset:{token}          → reset record (1-hour TTL)
 ```
 
 ---
