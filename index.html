@@ -39,6 +39,14 @@
 
     .app { padding: 16px 16px 80px; }
 
+    /* Bento Layout Container - Desktop only */
+    .bento-container {
+      display: grid;
+      max-width: 1400px;
+      margin: 0 auto;
+      gap: 16px;
+    }
+
     /* Header */
     .header { max-width: 520px; margin: 0 auto 14px; }
     .header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
@@ -86,6 +94,8 @@
     /* Cards grid */
     .cards { max-width: 520px; margin: 0 auto; display: grid; gap: 8px; }
 
+    .cards-wrapper { grid-column: 1 / -1; }
+
     .empty {
       text-align: center; color: #666; font-family: 'Bebas Neue', cursive;
       font-size: 20px; letter-spacing: 4px; padding: 60px 0;
@@ -123,6 +133,101 @@
     }
 
     .card-actions { display: flex; gap: 5px; flex-shrink: 0; }
+
+    /* Desktop Bento Layout */
+    @media (min-width: 1024px) {
+      .app { padding: 32px 24px; }
+
+      .bento-container {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        grid-auto-rows: minmax(120px, auto);
+        gap: 20px;
+      }
+
+      /* Header spans full width at top */
+      .header {
+        grid-column: 1 / -1;
+        max-width: none;
+        margin: 0 0 0 0;
+      }
+
+      .header-row {
+        align-items: center;
+      }
+
+      .title { font-size: 32px; letter-spacing: 5px; }
+
+      /* Season selector - compact in header area */
+      .season-row {
+        grid-column: 1 / -1;
+        max-width: 400px;
+        margin: 0;
+      }
+
+      /* Statistics panel - large feature box */
+      .statistics-panel {
+        grid-column: 1 / 5;
+        grid-row: span 2;
+        max-width: none;
+        margin: 0;
+        padding: 28px 32px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .stats-header { font-size: 14px; letter-spacing: 4px; }
+      .stats-value { font-size: 42px; }
+      .stats-label { font-size: 12px; }
+      .stats-sublabel { font-size: 12px; }
+      .stats-subvalue { font-size: 14px; }
+
+      /* Cards area - main content, spans remaining space */
+      .cards-wrapper {
+        grid-column: 5 / -1;
+        grid-row: span 2;
+      }
+
+      .cards {
+        max-width: none;
+        margin: 0;
+        gap: 12px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      }
+
+      .card {
+        padding: 14px 16px;
+        gap: 12px;
+      }
+
+      .card-name { font-size: 18px; }
+      .counter-number { font-size: 34px; min-width: 40px; }
+      .btn-dec, .btn-inc { padding: 8px 14px; font-size: 22px; }
+    }
+
+    /* Extra large desktop */
+    @media (min-width: 1440px) {
+      .bento-container {
+        gap: 24px;
+      }
+
+      .cards {
+        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+      }
+    }
+
+    /* Tablet and Mobile - disable bento layout */
+    @media (max-width: 1023px) {
+      .bento-container {
+        display: block;
+      }
+
+      .header { margin-bottom: 14px; }
+      .season-row { margin-top: 10px; margin-bottom: 0; }
+      .statistics-panel { margin-bottom: 12px; }
+    }
 
     /* Mobile optimizations */
     @media (max-width: 480px) {
@@ -557,29 +662,31 @@
 </div>
 
 <div class="app" id="main-app" style="display:none">
-  <!-- Header -->
-  <div class="header">
-    <div class="header-row">
-      <div>
-        <div class="title">BIKEPARK TRACKER</div>
+  <div class="bento-container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-row">
+        <div>
+          <div class="title">BIKEPARK TRACKER</div>
+        </div>
+        <div class="btn-group">
+          <button class="btn-reset" onclick="doLogout()">LOGOUT</button>
+          <button class="btn-reset" onclick="resetAll()">RESET ALL</button>
+          <button class="btn-new" onclick="openAdd()">+ NEUER BESUCH</button>
+        </div>
       </div>
-      <div class="btn-group">
-        <button class="btn-reset" onclick="doLogout()">LOGOUT</button>
-        <button class="btn-reset" onclick="resetAll()">RESET ALL</button>
-        <button class="btn-new" onclick="openAdd()">+ NEUER BESUCH</button>
-      </div>
+      <div class="header-divider"></div>
     </div>
+
     <!-- Season row -->
     <div class="season-row">
       <button class="btn-season-nav" id="btn-prev-season" onclick="prevSeason()" disabled>◀</button>
       <button class="season-label-btn" onclick="openSeasonManager()">SAISON <span id="season-year">—</span></button>
       <button class="btn-season-nav" id="btn-next-season" onclick="nextSeason()" disabled>▶</button>
     </div>
-    <div class="header-divider"></div>
-  </div>
 
-  <!-- Statistics Panel -->
-  <div class="statistics-panel" id="statistics-panel">
+    <!-- Statistics Panel -->
+    <div class="statistics-panel" id="statistics-panel">
     <div class="stats-header">SAISON <span id="stats-season">—</span> AUSGABEN</div>
 
     <div class="stats-main">
@@ -619,8 +726,11 @@
     </div>
   </div>
 
-  <!-- Cards -->
-  <div class="cards" id="cards-container"></div>
+    <!-- Cards -->
+    <div class="cards-wrapper">
+      <div class="cards" id="cards-container"></div>
+    </div>
+  </div>
 </div>
 
 <!-- Ticket Modal -->
