@@ -1,7 +1,7 @@
-name = "gravity-counter-api"
+name = "bikepark-tracker-api"
 main = "worker.js"
 compatibility_date = "2024-01-15"
 
 [[kv_namespaces]]
 binding = "GRAVITY_KV"
-id = "04276679bed84e7ca1a405acfa33a9bd"
+id = "your-kv-namespace-id-here"

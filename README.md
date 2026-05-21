@@ -97,7 +97,7 @@
       categories: [
         {
           id: "cat_abc123",
-          name: "Wexltrails halbtags",
+          name: "Example Bikepark Day Ticket",
           color: "#3a7bc0",
           price: 35,
           count: 5,
@@ -106,7 +106,7 @@
         },
         {
           id: "cat_def456",
-          name: "Bikepark Leogang Tagesticket",
+          name: "Another Park Half-Day Ticket",
           color: "#c0703a",
           price: 55,
           count: 2,
@@ -261,7 +261,7 @@ Organize your tickets by season (year). Each season has its own:
 
 Each ticket has:
 
-- **Name** — e.g. *Wexltrails halbtags*, *Wexltrails ganztags*
+- **Name** — e.g. *Day Ticket*, *Half-Day Ticket*
 - **Color** — pick from 8 accent colors
 - **Ticket price** — cost per ticket in €
 - **Gravity Card flag** — checkbox indicating if this ticket counts toward Gravity Card amortization
