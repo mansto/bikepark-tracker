@@ -662,6 +662,9 @@
 </div>
 
 <div class="app" id="main-app" style="display:none">
+  <!-- Network Error Banner -->
+  <div id="network-error" style="display:none; background:#f44336; color:white; padding:12px; text-align:center; font-weight:600; position:sticky; top:0; z-index:1000;"></div>
+
   <div class="bento-container">
     <!-- Header -->
     <div class="header">
@@ -816,6 +819,7 @@
   // ── State ─────────────────────────────────────────────────────────────────────
   let seasons = {};        // { [year]: { year, categories, budget } }
   let activeSeason = null; // number (year)
+  let dataLoaded = false;  // track if data has been successfully loaded from server
   let editingSeasonYear = null; // null = creating new season
 
   // View into active season (kept in sync)
@@ -862,7 +866,7 @@
         headers: { 'Authorization': 'Bearer ' + getToken() }
       });
       if (res.status === 401) { clearToken(); showAuth('login-screen'); return; }
-      if (!res.ok) throw new Error('Load failed');
+      if (!res.ok) throw new Error('Load failed: ' + res.status);
       const data = await res.json();
 
       if (data.seasons) {
@@ -890,16 +894,32 @@
       }
 
       syncFromActiveSeason();
-    } catch {
-      if (!activeSeason) {
+      dataLoaded = true;
+      hideNetworkError();
+    } catch (err) {
+      console.error('Load failed:', err);
+      // Only initialize empty data if this is the first load AND we have no data
+      if (!dataLoaded && !activeSeason) {
         const year = new Date().getFullYear();
         activeSeason = year;
         seasons = { [year]: { year, categories: [], budget: { start: null, spent: 0 } } };
+        dataLoaded = true; // Allow saves for new users
+      } else {
+        // Network error on subsequent load - show error but keep existing data
+        showNetworkError('Netzwerkfehler: Daten konnten nicht geladen werden. Deine Änderungen werden gespeichert, sobald die Verbindung wiederhergestellt ist.');
       }
+      throw err; // Re-throw so caller knows load failed
     }
   }
 
   function flushSave() {
+    // CRITICAL: Never save if data hasn't been loaded successfully
+    // This prevents data loss when network fails during initial load
+    if (!dataLoaded) {
+      console.warn('Skipping save: data not loaded yet');
+      return;
+    }
+
     clearTimeout(saveTimeout);
     saveTimeout = null;
     syncToActiveSeason();
@@ -909,7 +929,16 @@
       keepalive: true,
       headers: { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ seasons, activeSeason })
-    }).catch(() => {}).finally(() => { savePending = false; });
+    }).then(res => {
+      if (res.ok) {
+        hideNetworkError();
+      } else {
+        showNetworkError('Speichern fehlgeschlagen. Änderungen werden beim nächsten Versuch erneut gesendet.');
+      }
+    }).catch(err => {
+      console.error('Save failed:', err);
+      showNetworkError('Netzwerkfehler: Änderungen konnten nicht gespeichert werden. Sie werden automatisch gespeichert, sobald die Verbindung wiederhergestellt ist.');
+    }).finally(() => { savePending = false; });
   }
 
   function save() {
@@ -922,16 +951,34 @@
     syncInterval = setInterval(async () => {
       if (saveTimeout !== null || savePending) return;
       if (document.visibilityState === 'hidden') return;
-      await load();
-      render();
-      renderStatistics();
-      renderSeasonSelector();
+      try {
+        await load();
+        render();
+        renderStatistics();
+        renderSeasonSelector();
+      } catch (err) {
+        // Load failed (network error), but don't crash - keep existing data
+        console.error('Sync load failed:', err);
+      }
     }, 10_000);
   }
 
   function stopSync() {
     clearInterval(syncInterval);
     syncInterval = null;
+  }
+
+  function showNetworkError(message) {
+    const el = document.getElementById('network-error');
+    if (el) {
+      el.textContent = message;
+      el.style.display = 'block';
+    }
+  }
+
+  function hideNetworkError() {
+    const el = document.getElementById('network-error');
+    if (el) el.style.display = 'none';
   }
 
   // ── Season UI ─────────────────────────────────────────────────────────────────
@@ -1394,12 +1441,20 @@
     stopSync();
     await apiPost('/logout', {}).catch(() => {});
     clearToken();
+    dataLoaded = false; // Reset flag on logout
+    hideNetworkError();
     showAuth('login-screen');
   }
 
   async function unlockApp() {
     showApp();
-    await load();
+    try {
+      await load();
+    } catch (err) {
+      // If initial load fails, show the app anyway but with error notification
+      // User can still see the UI and will sync when connection is restored
+      console.error('Initial load failed:', err);
+    }
     render();
     renderStatistics();
     renderSeasonSelector();
