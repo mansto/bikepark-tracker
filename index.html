@@ -984,12 +984,14 @@
     }
 
     console.log('[SAVE] Starting save, dataLoaded =', dataLoaded, ', activeSeason =', activeSeason, ', seasons =', Object.keys(seasons));
+    console.log('[SAVE] Before sync - budgetStart =', budgetStart, ', budgetSpent =', budgetSpent);
     syncToActiveSeason();
+    console.log('[SAVE] After sync - seasons[' + activeSeason + '].budget =', seasons[activeSeason]?.budget);
     savePending = true;
     updateSaveButton();
 
     const payload = { seasons, activeSeason };
-    console.log('[SAVE] Payload:', JSON.stringify(payload).substring(0, 200) + '...');
+    console.log('[SAVE] Full payload:', JSON.stringify(payload));
 
     try {
       const res = await fetch(API_URL, {
@@ -1178,6 +1180,7 @@
 
     const budgetVal = parseFloat(document.getElementById('input-season-budget').value);
     const budgetStart = isNaN(budgetVal) || budgetVal <= 0 ? null : budgetVal;
+    console.log('[SEASON] Saving season', newYear, ', budgetVal =', budgetVal, ', budgetStart =', budgetStart);
 
     if (editingSeasonYear === null) {
       // Create new season
@@ -1227,6 +1230,14 @@
       // Update budget
       if (!seasons[newYear].budget) seasons[newYear].budget = { start: null, spent: 0 };
       seasons[newYear].budget.start = budgetStart;
+      console.log('[SEASON] Updated budget for year', newYear, ':', seasons[newYear].budget);
+
+      // If we edited the active season, sync the view-level variables
+      if (newYear === activeSeason) {
+        console.log('[SEASON] Syncing active season view');
+        syncFromActiveSeason();
+        renderStatistics();
+      }
 
       closeSeasonEditModal();
       renderSeasonSelector();
