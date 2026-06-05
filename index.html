@@ -72,6 +72,27 @@
     }
     .btn-new:hover { background: #fff; }
 
+    .btn-save-main {
+      background: #4CAF5022; border: 1px solid #4CAF50; border-radius: 10px;
+      color: #4CAF50; padding: 8px 14px; cursor: pointer; font-size: 13px;
+      font-family: 'Bebas Neue', cursive; letter-spacing: 2px;
+      transition: all 0.2s; white-space: nowrap;
+    }
+    .btn-save-main:hover { background: #4CAF5044; }
+    .btn-save-main.has-changes {
+      background: #FFA50022; border-color: #FFA500; color: #FFA500;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .btn-save-main.has-changes:hover { background: #FFA50044; }
+    .btn-save-main:disabled {
+      opacity: 0.5; cursor: not-allowed;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
     /* Season row */
     .season-row {
       display: flex; align-items: center; gap: 8px; margin-top: 10px;
@@ -665,6 +686,11 @@
   <!-- Network Error Banner -->
   <div id="network-error" style="display:none; background:#f44336; color:white; padding:12px; text-align:center; font-weight:600; position:sticky; top:0; z-index:1000;"></div>
 
+  <!-- Save Success Banner -->
+  <div id="save-success" style="display:none; background:#4CAF50; color:white; padding:12px; text-align:center; font-weight:600; position:sticky; top:0; z-index:1000;">
+    ✓ Erfolgreich gespeichert
+  </div>
+
   <div class="bento-container">
     <!-- Header -->
     <div class="header">
@@ -675,6 +701,7 @@
         <div class="btn-group">
           <button class="btn-reset" onclick="doLogout()">LOGOUT</button>
           <button class="btn-reset" onclick="resetAll()">RESET ALL</button>
+          <button class="btn-save-main" id="btn-save-main" onclick="saveData()">SPEICHERN</button>
           <button class="btn-new" onclick="openAdd()">+ NEUER BESUCH</button>
         </div>
       </div>
@@ -821,6 +848,7 @@
   let activeSeason = null; // number (year)
   let dataLoaded = false;  // track if data has been successfully loaded from server
   let editingSeasonYear = null; // null = creating new season
+  let hasUnsavedChanges = false; // track if there are unsaved changes
 
   // View into active season (kept in sync)
   let categories = [];
@@ -856,7 +884,6 @@
   // ── API Storage ───────────────────────────────────────────────────────────────
   const API_URL = 'https://gravity-counter-api.mstocker.workers.dev/'.replace(/\/$/, '');
 
-  let saveTimeout = null;
   let savePending = false;
   let syncInterval = null;
 
@@ -924,54 +951,92 @@
     }
   }
 
-  function flushSave() {
+  function markUnsaved() {
+    if (!hasUnsavedChanges) {
+      hasUnsavedChanges = true;
+      updateSaveButton();
+    }
+  }
+
+  function updateSaveButton() {
+    const btn = document.getElementById('btn-save-main');
+    if (!btn) return;
+    if (hasUnsavedChanges) {
+      btn.classList.add('has-changes');
+      btn.textContent = 'SPEICHERN *';
+    } else {
+      btn.classList.remove('has-changes');
+      btn.textContent = 'SPEICHERN';
+    }
+    btn.disabled = savePending || !dataLoaded;
+  }
+
+  async function saveData() {
     // CRITICAL: Never save if data hasn't been loaded successfully
-    // This prevents data loss when network fails during initial load
     if (!dataLoaded) {
       console.warn('[SAVE BLOCKED] dataLoaded = false, skipping save to prevent data loss');
+      showNetworkError('Daten wurden noch nicht geladen. Bitte warten...');
+      return;
+    }
+
+    if (savePending) {
+      console.warn('[SAVE BLOCKED] Save already in progress');
       return;
     }
 
     console.log('[SAVE] Starting save, dataLoaded =', dataLoaded, ', activeSeason =', activeSeason, ', seasons =', Object.keys(seasons));
-    clearTimeout(saveTimeout);
-    saveTimeout = null;
     syncToActiveSeason();
     savePending = true;
+    updateSaveButton();
+
     const payload = { seasons, activeSeason };
     console.log('[SAVE] Payload:', JSON.stringify(payload).substring(0, 200) + '...');
 
-    fetch(API_URL, {
-      method: 'PUT',
-      keepalive: true,
-      headers: { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    }).then(res => {
+    try {
+      const res = await fetch(API_URL, {
+        method: 'PUT',
+        headers: { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
       console.log('[SAVE] Response status:', res.status, res.ok ? 'OK' : 'FAILED');
+
       if (res.ok) {
+        hasUnsavedChanges = false;
+        updateSaveButton();
         hideNetworkError();
+        showSaveSuccess();
       } else {
-        showNetworkError('Speichern fehlgeschlagen. Änderungen werden beim nächsten Versuch erneut gesendet.');
+        showNetworkError('Speichern fehlgeschlagen. Bitte erneut versuchen.');
       }
-      return res;
-    }).catch(err => {
+    } catch (err) {
       console.error('[SAVE] Network error:', err);
-      showNetworkError('Netzwerkfehler: Änderungen konnten nicht gespeichert werden. Sie werden automatisch gespeichert, sobald die Verbindung wiederhergestellt ist.');
-    }).finally(() => {
-      console.log('[SAVE] Completed, savePending = false');
+      showNetworkError('Netzwerkfehler: Änderungen konnten nicht gespeichert werden. Bitte erneut versuchen.');
+    } finally {
+      console.log('[SAVE] Completed');
       savePending = false;
-    });
+      updateSaveButton();
+    }
   }
 
-  function save() {
-    clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(flushSave, 800);
+  function showSaveSuccess() {
+    const el = document.getElementById('save-success');
+    if (el) {
+      el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 2000);
+    }
   }
 
   function startSync() {
     stopSync();
     syncInterval = setInterval(async () => {
-      if (saveTimeout !== null || savePending) return;
+      if (savePending) return;
       if (document.visibilityState === 'hidden') return;
+      // Only sync if no unsaved changes (to avoid overwriting user's work)
+      if (hasUnsavedChanges) {
+        console.log('[SYNC] Skipping sync - unsaved changes present');
+        return;
+      }
       try {
         await load();
         render();
@@ -979,9 +1044,9 @@
         renderSeasonSelector();
       } catch (err) {
         // Load failed (network error), but don't crash - keep existing data
-        console.error('Sync load failed:', err);
+        console.error('[SYNC] Load failed:', err);
       }
-    }, 10_000);
+    }, 30_000); // 30 seconds instead of 10
   }
 
   function stopSync() {
@@ -1019,7 +1084,7 @@
     render();
     renderStatistics();
     renderSeasonSelector();
-    save();
+    markUnsaved();
   }
 
   function prevSeason() {
@@ -1193,7 +1258,7 @@
       closeSeasonEditModal();
       renderSeasonSelector();
       renderSeasonList();
-      save();
+      markUnsaved();
     }
   }
 
@@ -1204,7 +1269,7 @@
 
   function deleteSeason(year) {
     delete seasons[year];
-    save();
+    markUnsaved();
     renderSeasonList();
     renderSeasonSelector();
   }
@@ -1304,7 +1369,7 @@
       budgetSpent += cat.step;
     }
     categories = categories.map(c => c.id === id ? {...c, count: c.count+1, sum: c.sum+c.step} : c);
-    save(); render(); renderStatistics();
+    markUnsaved(); render(); renderStatistics();
   }
   function decrement(id) {
     categories = categories.map(c => {
@@ -1316,11 +1381,11 @@
       }
       return {...c, count: newCount, sum: newSum};
     });
-    save(); render(); renderStatistics();
+    markUnsaved(); render(); renderStatistics();
   }
   function deleteCategory(id) {
     categories = categories.filter(c => c.id !== id);
-    save(); render();
+    markUnsaved(); render();
   }
   function resetAll() {
     if (!confirm('Möchten Sie wirklich alle Zähler für die aktuelle Saison zurücksetzen? Diese Aktion kann nicht rückgängig gemacht werden.')) {
@@ -1328,7 +1393,7 @@
     }
     budgetSpent = 0;
     categories = categories.map(c => ({...c, count: 0, sum: 0}));
-    save(); render(); renderStatistics();
+    markUnsaved(); render(); renderStatistics();
   }
 
   // ── Ticket Modal ──────────────────────────────────────────────────────────────
@@ -1403,7 +1468,7 @@
     } else {
       categories.push({ id: Date.now(), name, color: selectedColor, step, count: 0, sum: 0, reducesTheCurrentTotalOfTheGravityCardPrice });
     }
-    save(); render(); closeModal();
+    markUnsaved(); render(); closeModal();
   }
 
   // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -1471,6 +1536,7 @@
     showApp();
     try {
       await load();
+      hasUnsavedChanges = false; // Fresh load = no unsaved changes
     } catch (err) {
       // If initial load fails, show the app anyway but with error notification
       // User can still see the UI and will sync when connection is restored
@@ -1479,6 +1545,7 @@
     render();
     renderStatistics();
     renderSeasonSelector();
+    updateSaveButton();
     startSync();
   }
 
@@ -1497,6 +1564,14 @@
       }
       return;
     }
+
+    // Ctrl+S / Cmd+S to save
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      if (hasUnsavedChanges && dataLoaded) saveData();
+      return;
+    }
+
     if (e.key === 'Escape') {
       if (document.getElementById('season-edit-modal').style.display !== 'none') { closeSeasonEditModal(); return; }
       if (document.getElementById('season-modal').style.display !== 'none') { closeSeasonModal(); return; }
@@ -1538,11 +1613,12 @@
     });
   }
 
-  // Save immediately when page is hidden (don't wait for debounce)
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden' &&
-        document.getElementById('main-app').style.display !== 'none') {
-      flushSave();
+  // Warn before leaving with unsaved changes
+  window.addEventListener('beforeunload', (e) => {
+    if (hasUnsavedChanges && document.getElementById('main-app').style.display !== 'none') {
+      e.preventDefault();
+      e.returnValue = 'Sie haben ungespeicherte Änderungen. Möchten Sie die Seite wirklich verlassen?';
+      return e.returnValue;
     }
   });
 
