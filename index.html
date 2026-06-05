@@ -861,16 +861,20 @@
   let syncInterval = null;
 
   async function load() {
+    console.log('[LOAD] Starting load, current dataLoaded =', dataLoaded, ', activeSeason =', activeSeason);
     try {
       const res = await fetch(API_URL, {
         headers: { 'Authorization': 'Bearer ' + getToken() }
       });
+      console.log('[LOAD] Fetch response:', res.status, res.ok ? 'OK' : 'FAILED');
       if (res.status === 401) { clearToken(); showAuth('login-screen'); return; }
       if (!res.ok) throw new Error('Load failed: ' + res.status);
       const data = await res.json();
+      console.log('[LOAD] Server data:', JSON.stringify(data).substring(0, 200));
 
       if (data.seasons) {
         // New format
+        console.log('[LOAD] Using new format (data.seasons exists)');
         seasons = data.seasons;
         // Convert year keys to numbers
         const normalized = {};
@@ -882,6 +886,7 @@
         activeSeason = Number(data.activeSeason);
       } else {
         // Legacy format — migrate to current year
+        console.log('[LOAD] Using legacy format or empty data');
         const year = new Date().getFullYear();
         seasons = {
           [year]: {
@@ -895,16 +900,19 @@
 
       syncFromActiveSeason();
       dataLoaded = true;
+      console.log('[LOAD] Success! dataLoaded = true, activeSeason =', activeSeason, ', seasons =', Object.keys(seasons));
       hideNetworkError();
     } catch (err) {
-      console.error('Load failed:', err);
+      console.error('[LOAD] Error:', err);
       // Only initialize empty data if this is the first load AND we have no data
       if (!dataLoaded && !activeSeason) {
+        console.log('[LOAD] First load with no existing data, initializing empty');
         const year = new Date().getFullYear();
         activeSeason = year;
         seasons = { [year]: { year, categories: [], budget: { start: null, spent: 0 } } };
         dataLoaded = true; // Allow saves for new users
       } else {
+        console.log('[LOAD] Subsequent load failed, keeping existing data');
         // Network error on subsequent load - show error but keep existing data
         showNetworkError('Netzwerkfehler: Daten konnten nicht geladen werden. Deine Änderungen werden gespeichert, sobald die Verbindung wiederhergestellt ist.');
       }
@@ -916,29 +924,38 @@
     // CRITICAL: Never save if data hasn't been loaded successfully
     // This prevents data loss when network fails during initial load
     if (!dataLoaded) {
-      console.warn('Skipping save: data not loaded yet');
+      console.warn('[SAVE BLOCKED] dataLoaded = false, skipping save to prevent data loss');
       return;
     }
 
+    console.log('[SAVE] Starting save, dataLoaded =', dataLoaded, ', activeSeason =', activeSeason, ', seasons =', Object.keys(seasons));
     clearTimeout(saveTimeout);
     saveTimeout = null;
     syncToActiveSeason();
     savePending = true;
+    const payload = { seasons, activeSeason };
+    console.log('[SAVE] Payload:', JSON.stringify(payload).substring(0, 200) + '...');
+
     fetch(API_URL, {
       method: 'PUT',
       keepalive: true,
       headers: { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ seasons, activeSeason })
+      body: JSON.stringify(payload)
     }).then(res => {
+      console.log('[SAVE] Response status:', res.status, res.ok ? 'OK' : 'FAILED');
       if (res.ok) {
         hideNetworkError();
       } else {
         showNetworkError('Speichern fehlgeschlagen. Änderungen werden beim nächsten Versuch erneut gesendet.');
       }
+      return res;
     }).catch(err => {
-      console.error('Save failed:', err);
+      console.error('[SAVE] Network error:', err);
       showNetworkError('Netzwerkfehler: Änderungen konnten nicht gespeichert werden. Sie werden automatisch gespeichert, sobald die Verbindung wiederhergestellt ist.');
-    }).finally(() => { savePending = false; });
+    }).finally(() => {
+      console.log('[SAVE] Completed, savePending = false');
+      savePending = false;
+    });
   }
 
   function save() {
