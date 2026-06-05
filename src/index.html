@@ -872,9 +872,13 @@
       const data = await res.json();
       console.log('[LOAD] Server data:', JSON.stringify(data).substring(0, 200));
 
-      if (data.seasons) {
-        // New format
-        console.log('[LOAD] Using new format (data.seasons exists)');
+      // Check if we have valid season data (not just an empty object)
+      const hasValidSeasons = data.seasons && Object.keys(data.seasons).length > 0;
+      const validActiveSeason = data.activeSeason && data.activeSeason >= 2000 && data.activeSeason <= 2100;
+
+      if (hasValidSeasons && validActiveSeason) {
+        // New format with actual data
+        console.log('[LOAD] Using new format (data.seasons has data)');
         seasons = data.seasons;
         // Convert year keys to numbers
         const normalized = {};
@@ -885,8 +889,8 @@
         seasons = normalized;
         activeSeason = Number(data.activeSeason);
       } else {
-        // Legacy format — migrate to current year
-        console.log('[LOAD] Using legacy format or empty data');
+        // Empty/corrupted/legacy format — initialize with current year
+        console.log('[LOAD] Empty, corrupted, or legacy data - initializing fresh');
         const year = new Date().getFullYear();
         seasons = {
           [year]: {
