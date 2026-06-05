@@ -885,7 +885,6 @@
   const API_URL = '__API_URL__'.replace(/\/$/, '');
 
   let savePending = false;
-  let syncInterval = null;
 
   async function load() {
     console.log('[LOAD] Starting load, current dataLoaded =', dataLoaded, ', activeSeason =', activeSeason);
@@ -1027,32 +1026,6 @@
     }
   }
 
-  function startSync() {
-    stopSync();
-    syncInterval = setInterval(async () => {
-      if (savePending) return;
-      if (document.visibilityState === 'hidden') return;
-      // Only sync if no unsaved changes (to avoid overwriting user's work)
-      if (hasUnsavedChanges) {
-        console.log('[SYNC] Skipping sync - unsaved changes present');
-        return;
-      }
-      try {
-        await load();
-        render();
-        renderStatistics();
-        renderSeasonSelector();
-      } catch (err) {
-        // Load failed (network error), but don't crash - keep existing data
-        console.error('[SYNC] Load failed:', err);
-      }
-    }, 30_000); // 30 seconds instead of 10
-  }
-
-  function stopSync() {
-    clearInterval(syncInterval);
-    syncInterval = null;
-  }
 
   function showNetworkError(message) {
     const el = document.getElementById('network-error');
@@ -1524,10 +1497,10 @@
   }
 
   async function doLogout() {
-    stopSync();
     await apiPost('/logout', {}).catch(() => {});
     clearToken();
     dataLoaded = false; // Reset flag on logout
+    hasUnsavedChanges = false; // Clear unsaved changes flag
     hideNetworkError();
     showAuth('login-screen');
   }
@@ -1539,14 +1512,12 @@
       hasUnsavedChanges = false; // Fresh load = no unsaved changes
     } catch (err) {
       // If initial load fails, show the app anyway but with error notification
-      // User can still see the UI and will sync when connection is restored
       console.error('Initial load failed:', err);
     }
     render();
     renderStatistics();
     renderSeasonSelector();
     updateSaveButton();
-    startSync();
   }
 
   async function initAuth() {
